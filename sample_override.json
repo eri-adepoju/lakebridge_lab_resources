@@ -1,0 +1,5 @@
+{
+	"inherit_from": "base_sqlserver2databricks_sql.json",
+	"prefix_for_variable": "VAR_"
+}
+	
