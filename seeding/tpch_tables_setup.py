@@ -1,13 +1,13 @@
 # Databricks notebook source
 # MAGIC %md
 # MAGIC # TPC-H Tables Setup for demo
-# MAGIC 
+# MAGIC
 # MAGIC This notebook creates the TPC-H tables used in the Lakebridge labs
 # MAGIC ## Parameters
 # MAGIC - `catalog_name`: The catalog to create tables in (default: "lakebridge_lab_resources")
 # MAGIC - `schema_name`: The schema to create tables in (default: "tpch")
 # MAGIC - `row_count`: Number of rows to insert (default: 1000)
-# MAGIC 
+# MAGIC
 # MAGIC ## Tables Created
 # MAGIC - `customer`: Customer information
 # MAGIC - `orders`: Order information  
@@ -60,9 +60,10 @@ spark.sql(f"CREATE CATALOG IF NOT EXISTS {catalog_name}")
 
 # Create schema if it doesn't exist
 spark.sql(f"CREATE SCHEMA IF NOT EXISTS {catalog_name}.{schema_name}")
+spark.sql(f"CREATE SCHEMA IF NOT EXISTS hive_metastore.{schema_name}")
 
 print(f"Created catalog: {catalog_name}")
-print(f"Created schema: {catalog_name}.{schema_name}")
+print(f"Created schema: {catalog_name}.{schema_name} and hive_metastore.{schema_name}")
 
 # COMMAND ----------
 
@@ -76,6 +77,7 @@ print(f"Created schema: {catalog_name}.{schema_name}")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.region (
     r_regionkey INT PRIMARY KEY,
@@ -84,7 +86,16 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.region (
 )
 """)
 
-print("Created region table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.region (
+    r_regionkey INT,
+    r_name STRING,
+    r_comment STRING
+)
+""")
+
+print("Created region table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -93,6 +104,7 @@ print("Created region table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.nation (
     n_nationkey INT PRIMARY KEY,
@@ -103,7 +115,17 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.nation (
 )
 """)
 
-print("Created nation table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.nation (
+    n_nationkey INT,
+    n_name STRING,
+    n_regionkey INT,
+    n_comment STRING
+)
+""")
+
+print("Created nation table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -112,6 +134,7 @@ print("Created nation table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.supplier (
     s_suppkey INT PRIMARY KEY,
@@ -125,7 +148,20 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.supplier (
 )
 """)
 
-print("Created supplier table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.supplier (
+    s_suppkey INT,
+    s_name STRING,
+    s_address STRING,
+    s_nationkey INT,
+    s_phone STRING,
+    s_acctbal DECIMAL(15,2),
+    s_comment STRING
+)
+""")
+
+print("Created supplier table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -134,6 +170,7 @@ print("Created supplier table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.part (
     p_partkey INT PRIMARY KEY,
@@ -148,7 +185,22 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.part (
 )
 """)
 
-print("Created part table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.part (
+    p_partkey INT,
+    p_name STRING,
+    p_mfgr STRING,
+    p_brand STRING,
+    p_type STRING,
+    p_size INT,
+    p_container STRING,
+    p_retailprice DECIMAL(15,2),
+    p_comment STRING
+)
+""")
+
+print("Created part table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -157,6 +209,7 @@ print("Created part table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.customer (
     c_custkey INT PRIMARY KEY,
@@ -171,7 +224,21 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.customer (
 )
 """)
 
-print("Created customer table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.customer (
+    c_custkey INT,
+    c_name STRING,
+    c_address STRING,
+    c_nationkey INT,
+    c_phone STRING,
+    c_acctbal DECIMAL(15,2),
+    c_mktsegment STRING,
+    c_comment STRING
+)
+""")
+
+print("Created customer table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -180,6 +247,7 @@ print("Created customer table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.orders (
     o_orderkey INT PRIMARY KEY,
@@ -191,11 +259,28 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.orders (
     o_clerk STRING,
     o_shippriority INT,
     o_comment STRING,
+    o_timestamp TIMESTAMP,
     FOREIGN KEY (o_custkey) REFERENCES {catalog_name}.{schema_name}.customer(c_custkey)
 )
 """)
 
-print("Created orders table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.orders (
+    o_orderkey INT,
+    o_custkey INT,
+    o_orderstatus STRING,
+    o_totalprice DECIMAL(15,2),
+    o_orderdate DATE,
+    o_orderpriority STRING,
+    o_clerk STRING,
+    o_shippriority INT,
+    o_comment STRING,
+    o_timestamp TIMESTAMP
+)
+""")
+
+print("Created orders table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -204,6 +289,7 @@ print("Created orders table")
 
 # COMMAND ----------
 
+# Create in Unity Catalog
 spark.sql(f"""
 CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.lineitem (
     l_orderkey INT,
@@ -229,7 +315,29 @@ CREATE TABLE IF NOT EXISTS {catalog_name}.{schema_name}.lineitem (
 )
 """)
 
-print("Created lineitem table")
+# Create in Hive Metastore
+spark.sql(f"""
+CREATE TABLE IF NOT EXISTS hive_metastore.{schema_name}.lineitem (
+    l_orderkey INT,
+    l_partkey INT,
+    l_suppkey INT,
+    l_linenumber INT,
+    l_quantity DECIMAL(15,2),
+    l_extendedprice DECIMAL(15,2),
+    l_discount DECIMAL(15,2),
+    l_tax DECIMAL(15,2),
+    l_returnflag STRING,
+    l_linestatus STRING,
+    l_shipdate DATE,
+    l_commitdate DATE,
+    l_receiptdate DATE,
+    l_shipinstruct STRING,
+    l_shipmode STRING,
+    l_comment STRING
+)
+""")
+
+print("Created lineitem table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -256,9 +364,14 @@ regions_data = [
 ]
 
 regions_df = spark.createDataFrame(regions_data, ["r_regionkey", "r_name", "r_comment"])
+
+# Insert into Unity Catalog
 regions_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.region")
 
-print(f"Inserted {regions_df.count()} rows into region table")
+# Insert into Hive Metastore
+regions_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.region")
+
+print(f"Inserted {regions_df.count()} rows into region table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -297,9 +410,14 @@ nations_data = [
 ]
 
 nations_df = spark.createDataFrame(nations_data, ["n_nationkey", "n_name", "n_regionkey", "n_comment"])
+
+# Insert into Unity Catalog
 nations_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.nation")
 
-print(f"Inserted {nations_df.count()} rows into nation table")
+# Insert into Hive Metastore
+nations_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.nation")
+
+print(f"Inserted {nations_df.count()} rows into nation table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -328,9 +446,13 @@ customer_df = spark.range(customer_count).select(
     concat(lit("Comment#"), col("id")).alias("c_comment")
 )
 
+# Insert into Unity Catalog
 customer_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.customer")
 
-print(f"Inserted {customer_df.count()} rows into customer table")
+# Insert into Hive Metastore
+customer_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.customer")
+
+print(f"Inserted {customer_df.count()} rows into customer table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -351,9 +473,13 @@ supplier_df = spark.range(supplier_count).select(
     concat(lit("Comment#"), col("id")).alias("s_comment")
 )
 
+# Insert into Unity Catalog
 supplier_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.supplier")
 
-print(f"Inserted {supplier_df.count()} rows into supplier table")
+# Insert into Hive Metastore
+supplier_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.supplier")
+
+print(f"Inserted {supplier_df.count()} rows into supplier table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -418,9 +544,13 @@ part_df = spark.range(part_count).select(
     concat(lit("Comment#"), col("id")).alias("p_comment")
 )
 
+# Insert into Unity Catalog
 part_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.part")
 
-print(f"Inserted {part_df.count()} rows into part table")
+# Insert into Hive Metastore
+part_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.part")
+
+print(f"Inserted {part_df.count()} rows into part table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -446,12 +576,19 @@ orders_df = spark.range(orders_count).select(
     .otherwise("5-LOW").alias("o_orderpriority"),
     concat(lit("Clerk#"), col("id")).alias("o_clerk"),
     (col("id") % 5 + 1).alias("o_shippriority"),
-    concat(lit("Comment#"), col("id")).alias("o_comment")
+    concat(lit("Comment#"), col("id")).alias("o_comment"),
+    # Add timestamp with some null values (every 7th order will have null timestamp)
+    when(col("id") % 7 == 0, lit(None).cast("timestamp"))
+    .otherwise(expr("date_add(SECOND, cast(rand() * 1000 - 500 as int), current_timestamp())")).alias("o_timestamp")
 )
 
+# Insert into Unity Catalog
 orders_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.orders")
 
-print(f"Inserted {orders_df.count()} rows into orders table")
+# Insert into Hive Metastore
+orders_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.orders")
+
+print(f"Inserted {orders_df.count()} rows into orders table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -493,9 +630,13 @@ lineitem_df = spark.range(lineitem_count).select(
     concat(lit("Comment#"), col("id")).alias("l_comment")
 )
 
+# Insert into Unity Catalog
 lineitem_df.write.mode("overwrite").insertInto(f"{catalog_name}.{schema_name}.lineitem")
 
-print(f"Inserted {lineitem_df.count()} rows into lineitem table")
+# Insert into Hive Metastore
+lineitem_df.write.mode("overwrite").insertInto(f"hive_metastore.{schema_name}.lineitem")
+
+print(f"Inserted {lineitem_df.count()} rows into lineitem table in both Unity Catalog and Hive Metastore")
 
 # COMMAND ----------
 
@@ -511,9 +652,15 @@ print(f"Inserted {lineitem_df.count()} rows into lineitem table")
 
 tables = ["region", "nation", "customer", "supplier", "part", "orders", "lineitem"]
 
+print("Unity Catalog Tables:")
 for table in tables:
     count = spark.sql(f"SELECT COUNT(*) as count FROM {catalog_name}.{schema_name}.{table}").collect()[0]["count"]
-    print(f"{table}: {count} rows")
+    print(f"  {table}: {count} rows")
+
+print("\nHive Metastore Tables:")
+for table in tables:
+    count = spark.sql(f"SELECT COUNT(*) as count FROM hive_metastore.{schema_name}.{table}").collect()[0]["count"]
+    print(f"  {table}: {count} rows")
 
 # COMMAND ----------
 
@@ -523,7 +670,7 @@ for table in tables:
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Customer Sample
+# MAGIC #### Customer Sample - Unity Catalog
 
 # COMMAND ----------
 
@@ -532,7 +679,16 @@ display(spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.customer LIMIT 5"
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Orders Sample
+# MAGIC #### Customer Sample - Hive Metastore
+
+# COMMAND ----------
+
+display(spark.sql(f"SELECT * FROM hive_metastore.{schema_name}.customer LIMIT 5"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Orders Sample - Unity Catalog
 
 # COMMAND ----------
 
@@ -541,11 +697,29 @@ display(spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.orders LIMIT 5"))
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC #### Lineitem Sample
+# MAGIC #### Orders Sample - Hive Metastore
+
+# COMMAND ----------
+
+display(spark.sql(f"SELECT * FROM hive_metastore.{schema_name}.orders LIMIT 5"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Lineitem Sample - Unity Catalog
 
 # COMMAND ----------
 
 display(spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.lineitem LIMIT 5"))
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC #### Lineitem Sample - Hive Metastore
+
+# COMMAND ----------
+
+display(spark.sql(f"SELECT * FROM hive_metastore.{schema_name}.lineitem LIMIT 5"))
 
 # COMMAND ----------
 
@@ -557,10 +731,6 @@ display(spark.sql(f"SELECT * FROM {catalog_name}.{schema_name}.lineitem LIMIT 5"
 print("=" * 60)
 print("TPC-H TABLES SETUP COMPLETE")
 print("=" * 60)
-print(f"Catalog: {catalog_name}")
-print(f"Schema: {schema_name}")
-print(f"Tables created: {', '.join(tables)}")
-print(f"Total rows inserted: {sum([spark.sql(f'SELECT COUNT(*) as count FROM {catalog_name}.{schema_name}.{table}').collect()[0]['count'] for table in tables])}")
-print("=" * 60)
-print("Tables are ready for Lakebridge labs!")
-print("=" * 60) 
+print(f"Unity Catalog: {catalog_name}.{schema_name}")
+print(f"Hive Metastore: hive_metastore.{schema_name}")
+print(f"Tables created in both locations: {', '.join(tables)}")
